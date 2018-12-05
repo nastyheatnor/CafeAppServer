@@ -9,7 +9,7 @@ function run()
 
 function getIP()
 {
-	return "100.16.105.198/cafe/CafeAppServer/";
+	return "";
 }
 
 function retrieveParser()
