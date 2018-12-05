@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Menu>
+        <MenuItems>
+                <Item mechanism="BFLP">
+                        <name value="Croissant"></name>
+                        <type value="Pastry"></type>
+                        <id value="1"></id>
+                        <price value="2.50"></price>
+                </Item>
+                <Item mechanism="BFLP">
+                        <name value="Vanilla Latte"></name>
+                        <type value="Coffee"></type>
+                        <id value="2"></id>
+                        <price value="5.00"></price>
+                </Item>
+                <Item mechanism="BFLP">
+                        <name value="Iced Tea"></name>
+                        <type value="Tea"></type>
+                        <id value="3"></id>
+                        <price value="3.00"></price>
+                </Item>
+        </MenuItems>
+</Menu>
+ 

@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="javascript.js"></script>
+<script>
+function loadManagement()
+{
+	var xml = retrieveParser();
+	var table = document.getElementById("base-table");
+
+	var htmtext = table.innerHTML + "";
+
+	for(var i = 0; i < xml.length; i++)
+	{
+htmtext += `<tr>`;
+htmtext += `<td><button onClick=removeFromCart(` + readAttribute(xml[i], "id")+ `) style="width:25px;height:25px;">X</button></td>`;
+		x = xml[i].childNodes;
+		var thing = false;
+		for(var j = 0; j < x.length; j++)
+		{
+			if (x[j].nodeType == 1) {
+				htmtext += 	`<td>`;	
+				htmtext +=	x[j].attributes[0].nodeValue;				
+				htmtext += 	`</td>`;
+			}
+		}
+htmtext +=  `<tr>`;
+	}
+	table.innerHTML = htmtext;
+}
+
+function removeItem(id)
+{
+	
+}
+</script>
+<title>Menu Tool</title>
+</head>
+<body onLoad="loadManagement()">
+<div id="wrapper" style="text-align:center">
+	<h1>Menu Tool</h1>
+	<div id="menu-listing">
+		<table id="base-table" style="border: 1px solid black;width:100%;text-align:left;">
+			<tr>
+				<th>Remove</th>
+				<th>Name</th>
+				<th>Type</th>
+				<th>Price</th>
+				<th>ID</th>
+			</tr>
+		</table>
+		<form>
+
+		</form>
+	</div>
+</div>
+</body>
+</html>
