@@ -1,5 +1,44 @@
 var xml;
 
+function pwPrompt(text)
+{
+	var modal = document.getElementById("myModal");
+	var textinner = document.getElementsByClassName("modal-text")[0];
+	modal.style.display = "block";
+	textinner.innerHTML = text;
+
+	var pwdbox = document.getElementById("pwdinpt");
+	var button = document.getElementById("pwd-submt");
+
+	button.onclick = function()
+	{
+		enterPassword(modal, pwdbox.value);
+	}
+}
+
+function enterPassword(modal, password)
+{
+	var xhttp = new XMLHttpRequest();
+	var response = "";
+	xhttp.onreadystatechange = function() {
+	        if (this.readyState == 4 && this.status == 200) {
+			response = this.responseText;
+			if(response == "1")
+			{
+				localStorage.setItem("pwd", password);
+				modal.style.display = "none";
+			}else
+			{
+				alert("Password incorrect! Try again.");
+			}
+		}
+	};
+	var params = "pwd=" + password;
+	xhttp.open("POST", "passwdscript.php", true);
+	xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xhttp.send(params);
+}
+
 function run()
 {
 //	document.getElementById("wrapper").style.width = screen.width + "px";
@@ -15,7 +54,8 @@ function getIP()
 function retrieveParser()
 {
 	if(xml == null || typeof xml == "undefined")
-	{	var xhttp = new XMLHttpRequest();
+	{	
+	var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 	        	if (this.readyState == 4 && this.status == 200) {
 				xml = this.responseXML;

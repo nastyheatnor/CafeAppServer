@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,14 +15,68 @@ function loadManagement()
 	for(var i = 0; i < xml.length; i++)
 	{
 htmtext += `<tr>`;
-htmtext += `<td><button onClick=removeFromCart(` + readAttribute(xml[i], "id")+ `) style="width:25px;height:25px;">X</button></td>`;
+htmtext += `<td><button onClick=removeItem(` + readAttribute(xml[i], "id")+ `) style="width:25px;height:25px;">X</button></td>`;
 		x = xml[i].childNodes;
 		var thing = false;
 		for(var j = 0; j < x.length; j++)
 		{
 			if (x[j].nodeType == 1) {
 				htmtext += 	`<td>`;	
-				htmtext +=	x[j].attributes[0].nodeValue;				
+				if(x[j].nodeName == "price")
+				{
+					htmtext += "$ " + parseFloat((x[j].attributes[0].nodeValue)).toFixed(2);				
+				}else if(x[j].nodeName == "options")
+				{
+				htmtext += "<table>"
+					for(var k = 0; k < x[j].childNodes.length; k++)
+					{
+					if (x[j].childNodes[k].nodeType == 1) {
+						htmtext += "<tr>";
+						var elemxm = x[j].childNodes[k];
+						var elemtype = elemxm.attributes[0].nodeValue;
+						htmtext += "<td><b>" + elemtype + " Option" + "</b></td>";
+						if(elemtype == "Text")
+						{
+							htmtext += "<td>";
+							htmtext += "Option Name: <i>" + elemxm.getElementsByTagName("name")[0].innerHTML;
+							htmtext += "</i></td>";
+							htmtext += "<td><i>";
+							htmtext += "\t| Description: " + elemxm.getElementsByTagName("text")[0].innerHTML;
+							htmtext += "</i></td>";
+						}else if(elemtype == "Addition")
+						{
+							htmtext += "<td>";
+							htmtext += "Option Name: <i>" + elemxm.getElementsByTagName("name")[0].innerHTML;
+							htmtext += "</i></td>";
+							htmtext += "<td>";
+							htmtext += "\t| Price: <i>" + elemxm.getElementsByTagName("price")[0].innerHTML;
+							htmtext += "</i></td>";							
+						}else if(elemtype == "Options")
+						{
+							htmtext += "<td>";
+							htmtext += "Option Name:<i> " + elemxm.getElementsByTagName("name")[0].innerHTML;
+							htmtext += "</i></td>";
+							htmtext += "<td>";
+							var suboptions = elemxm.getElementsByTagName("suboption");
+							var suboptionslist = "";
+							for(var c = 0; c < suboptions.length; c++)
+							{
+
+								suboptionslist += "|";
+								suboptionslist += " Name-<i> " + suboptions[c].getElementsByTagName("name")[0].innerHTML;
+								suboptionslist += "</i> Price-<i> $" + suboptions[c].getElementsByTagName("price")[0].innerHTML + "</i>";
+							}
+							htmtext += suboptionslist;
+							htmtext += "</td>";
+						}
+						htmtext += "</tr>";
+					}
+				}
+				htmtext += "</table>";
+				}else
+				{
+					htmtext += x[j].attributes[0].nodeValue;
+				}
 				htmtext += 	`</td>`;
 			}
 		}
@@ -32,11 +87,283 @@ htmtext +=  `<tr>`;
 
 function removeItem(id)
 {
+	if(confirm("Remove item? THIS IS IRREVERSABLE"))
+	{
+		if(confirm("Are you sure?"))
+		{
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if(this.readyState == 4 && this.status == 200) {
+					location.reload();
+				}
+			}
+			var params = "id=" + id;
+			xhttp.open("POST", "rmscript.php", true);
+			xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xhttp.send(params);
+		}
+	}	
+}
+
+function sendRequest()
+{
+
+	var name = document.getElementById("name").value;
+	var type = document.getElementById("type").value;	
+	var price = document.getElementById("price").value;
+	var BFLP = document.getElementById("BFLP").checked;
+	var MHC = document.getElementById("MHC").checked;
+	var RP = document.getElementById("RP").checked;
+
+	var addertable = document.getElementById("additional-options-adder").getElementsByClassName("new-option-row");
+
+	var optionsarr = [];
+	for(var i = 0; i < addertable.length; i++)
+	{
+		var option = {};
+		var row = addertable[i];
+		option.name = row.getElementsByClassName("option-name-input")[0].value;
+		option.type = row.getElementsByClassName("option-type-selector")[0].value;		
+
+		if(option.type == "Options")
+		{
+			var suboptionlist = [];
+			var suboptions = row.getElementsByClassName("option-subrow");
+			for(var i = 0; i < suboptions.length; i++)
+			{
+				var suboption = {};
+				var suboptionelem = suboptions[i];
+				var suboptionname = suboptionelem.getElementsByClassName("text-input")[0].value;
+				var suboptionprice = suboptionelem.getElementsByClassName("price-input")[0].value;
+				suboption.name = suboptionname;
+				suboption.price = suboptionprice;
+				suboptionlist.push(suboption);
+			}
+			option.suboptions = suboptionlist;
+		}
+		else if(option.type == "Text")
+		{
+			option.optiontext = row.getElementsByClassName("desc-input")[0].value;			
+		}
+		else if(option.type == "Addition")
+		{
+			option.price = row.getElementsByClassName("price-input")[0].value;
+		}
+		optionsarr.push(option);
+	}
+
+	var image = document.getElementById("image");
+	var imagefile = image.files[0];
+	var options = "";
+
+	var formdata = new FormData();
+
+	var mech = "";
+
+	if(BFLP){mech += " BFLP ";}
+	if(MHC){mech += " MHC ";}
+	if(RP){mech += " RP ";	}
+
+	if(name == ""){alert("You must enter a name!");}
+	else if(mech == ""){alert("You must enter an ordering mechanism");}
+	else if(type == ""){alert("You must enter a food Type!");}
+	else if(price == ""){alert("You must enter a price!");}
+	else if(imagefile == "" || imagefile == null){alert("You must enter a picture!");}
+	else 
+	{
+		if(confirm("Are you sure you want to add item " + name + "?"))
+		{
+			var json = {};
+			json.name = name;
+			json.type = type;
+			json.price = price;
+			json.mech = mech;
+			json.options = optionsarr;
+			
+			formdata.append("picture", imagefile);
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if(this.readyState == 4 && this.status == 200) {
+					var id = this.responseText;
+					var xh = new XMLHttpRequest();
+					document.getElementById("err").innerHTML = this.responseText;
+					formdata.append("id", this.responseText);
+					xh.onreadystatechange = function() {
+						if(this.readyState == 4 && this.status == 200) {
+							alert("Item successfully added!");
+							location.reload();
+						}
+					}
+					xh.open("POST", "addscript.php", true);
+					xh.send(formdata);
+				}
+			}
+			var params = "json=" + JSON.stringify(json) + "&Request=first";
+			xhttp.open("POST", "addscript.php", true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send(params);
+		}
+	}
+}
+
+function addOption()
+{
+	var div = document.getElementById("additional-options-adder");
+	var newtr = document.createElement("tr");
+	newtr.className="new-option-row";
+
+	var optionnametd = document.createElement("td");
+	optionnametd.style.verticalAlign = "unset";
+	var optionname = document.createElement("input");
+	optionname.className = "option-name-input";
+	optionname.type = "text";
+	optionname.style.width = "100%";
+	optionnametd.appendChild(optionname);
+
+	newtr.appendChild(optionnametd);
+
+	var optionselecttd = document.createElement("td");
+	var optionselect = document.createElement("select");
+	optionselect.className = "option-type-selector";
+	optionselect.style.width = "100%";
+	var optiontext = document.createElement("option");
+	optiontext.text = "Text";
+//	var optionadder = document.createElement("option");
+//	optionadder.text = "Addition";
+	var optionoptions = document.createElement("option");
+	optionoptions.text = "Options";
+	optionselect.onchange = function()
+	{
+		newoptionstable.innerHTML = "";
+		var newoptionstableheader = document.createElement("tr");
+		if(optionselect.value == "Text")
+		{
+			var newoptionstabletexttypeth = document.createElement("th");
+			newoptionstabletexttypeth.innerHTML = "Description";
+			newoptionstableheader.appendChild(newoptionstabletexttypeth);
+			newoptionsbuttonadd.style.display = "none";
+
+			var optionsmalltexttr = document.createElement("tr");
+			var optionsmalltextvaluetd = document.createElement("td");
+			var optionsmalltextvalue = document.createElement("input");
+			optionsmalltextvalue.className = "desc-input";
+			optionsmalltextvalue.type = "text";			
+
+			optionsmalltextvaluetd.appendChild(optionsmalltextvalue);
+			optionsmalltexttr.appendChild(optionsmalltextvaluetd);
+
+			newoptionstable.appendChild(newoptionstableheader);
+			newoptionstable.appendChild(optionsmalltexttr);
+
+		}else if(optionselect.value == "Addition")
+		{
+			var newoptionstableadditionnameth = document.createElement("th");
+			newoptionstableadditionnameth.innerHTML = "Price";
+			var newoptionstableadditionpriceth = document.createElement("th");
+			newoptionstableheader.appendChild(newoptionstableadditionnameth);
+			newoptionsbuttonadd.style.display = "none";
+
+			var optionsmalltexttr = document.createElement("tr");
+			var optionsmalltextvaluetd = document.createElement("td");
+			var optionsmalltextvalue = document.createElement("input");
+			optionsmalltextvalue.type = "number";
+			optionsmalltextvalue.className = "price-input";
+			var optionsmalltextvaluetd = document.createElement("td");
+			optionsmalltextvaluetd.appendChild(optionsmalltextvalue);
+			optionsmalltexttr.appendChild(optionsmalltextvaluetd);
+			newoptionstable.appendChild(newoptionstableheader);
+			newoptionstable.appendChild(optionsmalltexttr);
+
+		}else if(optionselect.value == "Options")
+		{
+			var newoptionstablevalue = document.createElement("th");
+			newoptionstablevalue.innerHTML="Value";
+			newoptionstableheader.appendChild(newoptionstablevalue);
+			var newoptionstableprice = document.createElement("th");
+			newoptionstableprice.innerHTML="Price";
+			newoptionstableheader.appendChild(newoptionstableprice);
+			newoptionsbuttonadd.style.display = "inline-block";
+
+			newoptionstable.appendChild(newoptionstableheader);
+		}
+	}	
+	optionselect.add(optiontext);	
+//	optionselect.add(optionadder);	
+	optionselect.add(optionoptions);
+	optionselecttd.appendChild(optionselect);
+
+	newtr.appendChild(optionselecttd);
+
+	var optionstd = document.createElement("td");
+	optionstd.style.verticalAlign = "unset";
+	optionstd.style.padding = "0px";
+
+	var options = document.createElement("div");
+	var newoptionsbuttonadd = document.createElement("button");
+
+	var newoptionstable = document.createElement("table");
+	optionselect.onchange();
+
+	newoptionsbuttonadd.innerHTML = "Add option choice";
+	newoptionsbuttonadd.style.display = "none";
+	newoptionsbuttonadd.onclick = function()
+	{
+		var table = this.parentElement.getElementsByTagName("table")[0];
+		var select = this.parentElement.parentElement.getElementsByTagName("select")[0];
+		var optionsmalltexttr = document.createElement("tr");
+		optionsmalltexttr.className = "option-subrow";
+		var optionsmalltextvaluetd = document.createElement("td");
+		var optionsmalltextvalue = document.createElement("input");
+		optionsmalltextvalue.type = "text";
+		optionsmalltextvalue.className = "text-input";
+		var optionsmalltextpricetd = document.createElement("td");
+		var optionsmalltextprice = document.createElement("input");
+		optionsmalltextprice.type = "number";
+		optionsmalltextprice.className = "price-input";
 	
+		optionsmalltextvaluetd.appendChild(optionsmalltextvalue);
+		optionsmalltextpricetd.appendChild(optionsmalltextprice);
+
+		optionsmalltexttr.appendChild(optionsmalltextvaluetd);
+		optionsmalltexttr.appendChild(optionsmalltextpricetd);
+
+		var optionsmalltextremovetd = document.createElement("td");		
+		var optionsmalltextremove = document.createElement("button");
+		optionsmalltextremove.innerHTML = "Remove";
+		optionsmalltextremove.onclick = function()
+		{
+			this.parentElement.parentElement.parentElement.removeChild(this.parentElement.parentElement);
+		}		
+		optionsmalltextremovetd.appendChild(optionsmalltextremove);
+		optionsmalltexttr.appendChild(optionsmalltextremovetd);
+
+		table.appendChild(optionsmalltexttr);
+	};
+	
+	options.appendChild(newoptionstable);
+	options.appendChild(newoptionsbuttonadd);
+	newtr.appendChild(options);
+
+	div.appendChild(newtr);
 }
 </script>
 <title>Menu Tool</title>
 </head>
+<style>
+	#additional-options-adder {
+		border: 1px solid black;
+	}
+	#additional-options-adder td{
+		margin-left: 1%;
+		margin-right: 1%;
+		vertical-align: unset;
+	}
+	#additional-options-adder tr {
+		border-top:1px solid black;
+		border-bottom:1px solid black;
+	}
+</style>
 <body onLoad="loadManagement()">
 <div id="wrapper" style="text-align:center">
 	<h1>Menu Tool</h1>
@@ -46,13 +373,37 @@ function removeItem(id)
 				<th>Remove</th>
 				<th>Name</th>
 				<th>Type</th>
-				<th>Price</th>
 				<th>ID</th>
+				<th>Price</th>
 			</tr>
 		</table>
-		<form>
-
-		</form>
+	<div style="text-align:left;">
+			  Add new Item: <br><br>
+			  <input id="name" type="text" name="name" placeholder="Name" required>	
+		  	  <input id="type" type="text" name="type" placeholder="Type" required>
+			  Price: $<input id="price" type="number" name="price" min="0" placeholder="0.00" required>
+			  <br><br>
+			  Ordering Mechanisms Avaliable: <br>
+			  <input id="BFLP" type="checkbox" name="mech[]" value="BFLP" checked>Bates Facuilty Lunch Program<br>
+			  <input id="MHC" type="checkbox" name="mech[]" value="MHC" checked>Maryland Hall Catering<br>
+			  <input id="RP" type="checkbox" name="mech[]" value="RP" checked>Rapid Pickup<br><br>
+			  <input type="file" id="image" name="image" accept="image/png, image/jpeg">
+			  <br>
+			  <br>
+			  <button onclick="addOption()">Add new additional option</button>
+			  <table id="additional-options-adder">
+				<tr>
+					<th style="width:15%">Option Name</th>
+					<th style="width:15%">Option Type</th>
+					<th style="width:50%">Option Choices</th>
+				</tr>
+			  </table>
+			  <br>
+			  <br>
+			  <button onclick="sendRequest();">Submit</button>
+	</div>
+	</div>
+	<div id="err">
 	</div>
 </div>
 </body>

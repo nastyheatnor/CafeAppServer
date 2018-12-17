@@ -1,24 +1,46 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0"?>
 <Menu>
-        <MenuItems>
-                <Item mechanism="BFLP">
-                        <name value="Croissant"></name>
-                        <type value="Pastry"></type>
-                        <id value="1"></id>
-                        <price value="2.50"></price>
-                </Item>
-                <Item mechanism="BFLP">
-                        <name value="Vanilla Latte"></name>
-                        <type value="Coffee"></type>
-                        <id value="2"></id>
-                        <price value="5.00"></price>
-                </Item>
-                <Item mechanism="BFLP">
-                        <name value="Iced Tea"></name>
-                        <type value="Tea"></type>
-                        <id value="3"></id>
-                        <price value="3.00"></price>
-                </Item>
-        </MenuItems>
+  <index>55</index>
+  <MenuItems>
+    <Item mechanism=" BFLP  MHC  RP ">
+      <name value="Test"/>
+      <type value="ttt"/>
+      <id value="53"/>
+      <price value="5"/>
+      <options>
+        <option type="Text">
+          <name>Test</name>
+          <text>tttt</text>
+        </option>
+      </options>
+    </Item>
+    <Item mechanism=" BFLP  MHC  RP ">
+      <name value="Test 2"/>
+      <type value="Test 2 Type"/>
+      <id value="54"/>
+      <price value="5.00"/>
+      <options>
+        <option type="Text">
+          <name>TestText</name>
+          <text>Cool Guy</text>
+        </option>
+        <option type="Options">
+          <name>TestOptions</name>
+          <suboption>
+            <name>Small</name>
+            <price>1.00</price>
+          </suboption>
+          <suboption>
+            <name>Medium</name>
+            <price>2.00</price>
+          </suboption>
+          <suboption>
+            <name>Large</name>
+            <price>3.00</price>
+          </suboption>
+        </option>
+      </options>
+    </Item>
+    
+  </MenuItems>
 </Menu>
- 

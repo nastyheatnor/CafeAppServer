@@ -1,5 +1,54 @@
 <html>
 <head>
+<style>
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+  border: 3px solid white;
+}
+
+.modal-content {
+  background-color: black;
+  margin: 15% auto; 
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#pwdinpt {
+  color:white;
+  background-color:black;
+  border:2px solid white;
+}
+
+#pwd-submt {
+  color:white;
+  background-color:black;
+  border: 2px solid white;
+}
+</style>
 <script src="javascript.js"></script>
 <script>
 function CheckDatabase() {
@@ -74,11 +123,21 @@ function process(obj)
 		}
 		row.insertCell(0).innerHTML = obj[i].id;
 		row.insertCell(1).innerHTML = formatDate(obj[i].time);
-		var ord = (obj[i].order + "").split(",");
+		var ord = obj[i].order;
 		var resp = "";
 		for(var j = 0; j < ord.length; j++)
 		{
-			resp +=  ord[j] + ". " + parseDirect(ord[j], "name") + " - $" + getPrice(ord[j]) + "<br>";
+			resp +=  ord[j].id + ". " + parseDirect(ord[j].id, "name") + " - $" + parseFloat(getPrice(ord[j].id)).toFixed(2) + "<br>";
+			resp += "<table>";
+			for(var k = 0; k < ord[j].options.split(",").length; k++)
+			{
+				resp += "<tr><td>";
+				op = ord[j].options.split(",")[k];
+				resp += op.split("_")[0] + ": ";
+				resp += op.split("_")[1];
+				resp += "</tr></td>";
+			}
+			resp += "</table>";
 		}
 		row.insertCell(2).innerHTML = resp;
 		row.insertCell(3).innerHTML = "$" + obj[i].cost.toFixed(2);
@@ -120,9 +179,16 @@ h2 {
 }
 </style>
 </head>
-<body onLoad="CheckDatabase()">
+<body onLoad="CheckDatabase(); pwPrompt('Enter password');">
 	<h1>Cafe @ Maryland Hall Order List</h1>
 	<h2>Bates Faculty Lunch Program</h2>
+	<div id="myModal" class="modal">
+	  <div class="modal-content">
+	    <p class="modal-text">A prompt</p>
+	    <input type="password" id="pwdinpt">
+	    <button id="pwd-submt">Submit</button>
+	  </div>	
+	</div>
 	<table id="BFLP">
 		<tr>
 			<th>ID</th>
